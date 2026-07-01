@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { ArrowRight, Download, Mail } from 'lucide-react';
 import ThreeSphere from './ThreeSphere';
 
@@ -10,7 +10,7 @@ const roles = [
   'Tech Explorer',
 ];
 
-// Staggered word animation — each word in the name reveals independently
+// Character-by-character reveal
 const NameWord = ({ word, delay }) => {
   const chars = word.split('');
   return (
@@ -77,186 +77,75 @@ export default function Hero() {
   return (
     <section
       id="home"
-      style={{
-        height: '100vh',
-        display: 'flex',
-        alignItems: 'center',
-        position: 'relative',
-        overflow: 'hidden',
-        paddingTop: 'var(--nav-height)',
-      }}
+      className="hero-section"
     >
-      {/* Radial highlight — top center glow */}
-      <div
-        style={{
-          position: 'absolute',
-          top: '-10%',
-          left: '50%',
-          transform: 'translateX(-50%)',
-          width: '80vw',
-          height: '60vh',
-          background: 'radial-gradient(ellipse at center top, rgba(124,58,237,0.12) 0%, transparent 65%)',
-          pointerEvents: 'none',
-        }}
-      />
+      {/* Radial glow */}
+      <div className="hero-glow" />
 
       {/* Content grid */}
-      <div
-        style={{
-          maxWidth: '1240px',
-          margin: '0 auto',
-          width: '100%',
-          padding: '0 clamp(24px, 5vw, 80px)',
-          display: 'grid',
-          gridTemplateColumns: '1.05fr 0.95fr',
-          gap: 'clamp(2rem, 4vw, 6rem)',
-          alignItems: 'center',
-        }}
-      >
-        {/* ── Left column ───────────────────────── */}
-        <div>
-          {/* Label */}
+      <div className="hero-grid">
+        {/* Left column */}
+        <div className="hero-left">
+          {/* Availability badge */}
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
-            style={{ marginBottom: 'clamp(12px, 2vh, 20px)' }}
           >
-            <span
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '8px',
-                padding: '5px 14px',
-                background: 'rgba(124,58,237,0.08)',
-                border: '1px solid rgba(124,58,237,0.25)',
-                borderRadius: '100px',
-                fontSize: '0.68rem',
-                letterSpacing: '0.22em',
-                color: '#a78bfa',
-                textTransform: 'uppercase',
-                fontFamily: 'JetBrains Mono, monospace',
-                fontWeight: 600,
-              }}
-            >
-              <span
-                style={{
-                  width: '6px', height: '6px', borderRadius: '50%',
-                  background: '#34d399',
-                  boxShadow: '0 0 8px rgba(52,211,153,0.8)',
-                  display: 'inline-block',
-                  animation: 'pulse-green 2s ease-in-out infinite',
-                }}
-              />
+            <span className="hero-badge">
+              <span className="availability-dot" />
               Available for opportunities
             </span>
           </motion.div>
 
-          {/* Name — staggered char reveal */}
-          <h1
-            style={{
-              fontFamily: 'Outfit, sans-serif',
-              fontSize: 'clamp(3rem, 6.5vw, 5.5rem)',
-              fontWeight: 900,
-              lineHeight: 0.95,
-              letterSpacing: '-0.04em',
-              marginBottom: 'clamp(10px, 1.8vh, 16px)',
-              background: 'linear-gradient(155deg, #ffffff 0%, #e2d5ff 40%, #8b5cf6 75%, #a78bfa 100%)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              backgroundClip: 'text',
-            }}
-          >
+          {/* Name */}
+          <h1 className="hero-name">
             <NameWord word="AASHIKA" delay={0.3} />
             <br />
             <NameWord word="JAIN" delay={0.6} />
           </h1>
 
-          {/* Role typing */}
+          {/* Typing role */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 1.0 }}
-            style={{
-              height: 'clamp(28px, 4vh, 38px)',
-              display: 'flex',
-              alignItems: 'center',
-              marginBottom: 'clamp(10px, 2vh, 18px)',
-            }}
+            className="hero-role-wrap"
           >
-            <span
-              style={{
-                fontSize: 'clamp(1rem, 2vw, 1.35rem)',
-                color: '#8b5cf6',
-                fontWeight: 600,
-                letterSpacing: '0.01em',
-                fontFamily: 'Inter, sans-serif',
-              }}
-            >
+            <span className="hero-role">
               {displayed}
-              <span
-                style={{
-                  display: 'inline-block',
-                  width: '2px',
-                  height: '1.1em',
-                  background: '#a78bfa',
-                  marginLeft: '2px',
-                  verticalAlign: 'text-bottom',
-                  animation: 'pulse-violet 1s ease-in-out infinite',
-                }}
-              />
+              <span className="hero-cursor" />
             </span>
           </motion.div>
 
           {/* Tagline */}
           <motion.p
-            initial={{ opacity: 0, y: 16 }}
+            initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 1.1, duration: 0.7 }}
-            style={{
-              fontSize: 'clamp(0.85rem, 1.3vw, 1rem)',
-              color: '#64748b',
-              lineHeight: 1.75,
-              marginBottom: 'clamp(18px, 3vh, 28px)',
-              maxWidth: '460px',
-              fontWeight: 400,
-            }}
+            className="hero-tagline"
           >
             Building intelligent solutions and modern digital experiences.
             Turning ideas into{' '}
             <span style={{ color: '#94a3b8', fontStyle: 'italic' }}>
               clean, purposeful code
-            </span>
-            .
+            </span>.
           </motion.p>
 
           {/* Buttons */}
           <motion.div
-            initial={{ opacity: 0, y: 16 }}
+            initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 1.25, duration: 0.6 }}
-            style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginBottom: 'clamp(20px, 3.5vh, 36px)' }}
+            className="hero-buttons"
           >
-            <button
-              onClick={() => scrollTo('projects')}
-              className="btn-primary"
-            >
+            <button onClick={() => scrollTo('projects')} className="btn-primary">
               View Projects <ArrowRight size={15} />
             </button>
-
-            <a
-              href="/resume.pdf"
-              download
-              className="btn-secondary"
-              style={{ textDecoration: 'none' }}
-            >
+            <a href="/resume.pdf" download className="btn-secondary" style={{ textDecoration: 'none' }}>
               <Download size={14} /> Resume
             </a>
-
-            <button
-              onClick={() => scrollTo('contact')}
-              className="btn-ghost"
-            >
+            <button onClick={() => scrollTo('contact')} className="btn-ghost">
               <Mail size={14} /> Contact
             </button>
           </motion.div>
@@ -266,93 +155,250 @@ export default function Hero() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 1.5, duration: 0.6 }}
-            style={{
-              display: 'flex',
-              gap: 'clamp(20px, 4vw, 40px)',
-              paddingTop: 'clamp(16px, 2.5vh, 24px)',
-              borderTop: '1px solid rgba(255,255,255,0.05)',
-            }}
+            className="hero-stats"
           >
-            {stats.map((s, i) => (
+            {stats.map((s) => (
               <div key={s.label}>
-                <div
-                  style={{
-                    fontFamily: 'Outfit, sans-serif',
-                    fontSize: 'clamp(1.4rem, 2.5vw, 1.9rem)',
-                    fontWeight: 900,
-                    background: 'linear-gradient(135deg, #a78bfa, #7c3aed)',
-                    WebkitBackgroundClip: 'text',
-                    WebkitTextFillColor: 'transparent',
-                    backgroundClip: 'text',
-                    lineHeight: 1.1,
-                  }}
-                >
-                  {s.value}
-                </div>
-                <div
-                  style={{
-                    fontSize: '0.7rem',
-                    color: '#4a5568',
-                    marginTop: '4px',
-                    letterSpacing: '0.06em',
-                    textTransform: 'uppercase',
-                    fontFamily: 'JetBrains Mono, monospace',
-                  }}
-                >
-                  {s.label}
-                </div>
+                <div className="hero-stat-value">{s.value}</div>
+                <div className="hero-stat-label">{s.label}</div>
               </div>
             ))}
           </motion.div>
         </div>
 
-        {/* ── Right column — 3D Sphere ───────────── */}
+        {/* Right column — 3D */}
         <motion.div
           initial={{ opacity: 0, scale: 0.85 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 1.4, ease: [0.22, 1, 0.36, 1], delay: 0.4 }}
-          style={{
-            position: 'relative',
-            width: '100%',
-            aspectRatio: '1 / 1',
-            maxHeight: 'calc(100vh - var(--nav-height) - 80px)',
-          }}
+          className="hero-3d"
         >
           <ThreeSphere />
         </motion.div>
       </div>
 
-      {/* Scroll cue */}
+      {/* Scroll indicator */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 2.2 }}
         onClick={() => scrollTo('about')}
-        style={{
-          position: 'absolute',
-          bottom: '28px',
-          left: '50%',
-          transform: 'translateX(-50%)',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          gap: '6px',
-          cursor: 'none',
-        }}
+        className="hero-scroll"
       >
-        <span style={{ fontSize: '0.6rem', letterSpacing: '0.25em', color: '#2d3748', textTransform: 'uppercase', fontFamily: 'JetBrains Mono, monospace' }}>
-          scroll
-        </span>
+        <span className="hero-scroll-text">scroll</span>
         <motion.div
-          animate={{ y: [0, 7, 0] }}
+          animate={{ y: [0, 6, 0] }}
           transition={{ repeat: Infinity, duration: 1.6, ease: 'easeInOut' }}
-          style={{
-            width: '1px',
-            height: '36px',
-            background: 'linear-gradient(180deg, rgba(124,58,237,0.6), transparent)',
-          }}
+          className="hero-scroll-line"
         />
       </motion.div>
+
+      {/* Responsive hero styles — all in one block so they're co-located */}
+      <style>{`
+        .hero-section {
+          height: 100vh;
+          height: 100dvh;
+          display: flex;
+          align-items: center;
+          position: relative;
+          overflow: hidden;
+          padding-top: var(--nav-height);
+          box-sizing: border-box;
+        }
+
+        .hero-glow {
+          position: absolute;
+          top: -10%;
+          left: 50%;
+          transform: translateX(-50%);
+          width: 80vw;
+          height: 55vh;
+          background: radial-gradient(ellipse at center top, rgba(124,58,237,0.12) 0%, transparent 65%);
+          pointer-events: none;
+        }
+
+        .hero-grid {
+          max-width: 1240px;
+          margin: 0 auto;
+          width: 100%;
+          padding: 0 clamp(24px, 5vw, 80px);
+          display: grid;
+          grid-template-columns: 1.1fr 0.9fr;
+          gap: clamp(1.5rem, 3vw, 5rem);
+          align-items: center;
+        }
+
+        .hero-left {
+          display: flex;
+          flex-direction: column;
+        }
+
+        .hero-badge {
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          padding: 4px 12px;
+          background: rgba(124,58,237,0.08);
+          border: 1px solid rgba(124,58,237,0.25);
+          border-radius: 100px;
+          font-size: 0.65rem;
+          letter-spacing: 0.2em;
+          color: #a78bfa;
+          text-transform: uppercase;
+          font-family: JetBrains Mono, monospace;
+          font-weight: 600;
+          margin-bottom: min(1.5vh, 12px);
+        }
+
+        .hero-name {
+          font-family: Outfit, sans-serif;
+          font-size: clamp(2.6rem, 5.5vw, 5.2rem);
+          font-weight: 900;
+          line-height: 0.92;
+          letter-spacing: -0.04em;
+          margin-bottom: min(1.5vh, 12px);
+          background: linear-gradient(155deg, #ffffff 0%, #e2d5ff 40%, #8b5cf6 75%, #a78bfa 100%);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          background-clip: text;
+        }
+
+        .hero-role-wrap {
+          height: min(4vh, 34px);
+          display: flex;
+          align-items: center;
+          margin-bottom: min(1.5vh, 12px);
+        }
+
+        .hero-role {
+          font-size: clamp(0.95rem, 1.8vw, 1.3rem);
+          color: #8b5cf6;
+          font-weight: 600;
+          letter-spacing: 0.01em;
+          font-family: Inter, sans-serif;
+        }
+
+        .hero-cursor {
+          display: inline-block;
+          width: 2px;
+          height: 1.1em;
+          background: #a78bfa;
+          margin-left: 2px;
+          vertical-align: text-bottom;
+          animation: pulse-violet 1s ease-in-out infinite;
+        }
+
+        .hero-tagline {
+          font-size: clamp(0.8rem, 1.2vw, 0.95rem);
+          color: #64748b;
+          line-height: 1.7;
+          margin-bottom: min(2vh, 18px);
+          max-width: 440px;
+        }
+
+        .hero-buttons {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 8px;
+          margin-bottom: min(2.5vh, 24px);
+        }
+
+        .hero-stats {
+          display: flex;
+          gap: clamp(16px, 3vw, 36px);
+          padding-top: min(2vh, 16px);
+          border-top: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .hero-stat-value {
+          font-family: Outfit, sans-serif;
+          font-size: clamp(1.2rem, 2.2vw, 1.8rem);
+          font-weight: 900;
+          background: linear-gradient(135deg, #a78bfa, #7c3aed);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          background-clip: text;
+          line-height: 1.1;
+        }
+
+        .hero-stat-label {
+          font-size: 0.65rem;
+          color: #4a5568;
+          margin-top: 3px;
+          letter-spacing: 0.06em;
+          text-transform: uppercase;
+          font-family: JetBrains Mono, monospace;
+        }
+
+        .hero-3d {
+          position: relative;
+          width: 100%;
+          aspect-ratio: 1 / 1;
+          max-height: calc(100vh - var(--nav-height) - 60px);
+        }
+
+        .hero-scroll {
+          position: absolute;
+          bottom: min(2vh, 20px);
+          left: 50%;
+          transform: translateX(-50%);
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 4px;
+          cursor: none;
+        }
+
+        .hero-scroll-text {
+          font-size: 0.55rem;
+          letter-spacing: 0.25em;
+          color: #2d3748;
+          text-transform: uppercase;
+          font-family: JetBrains Mono, monospace;
+        }
+
+        .hero-scroll-line {
+          width: 1px;
+          height: 28px;
+          background: linear-gradient(180deg, rgba(124,58,237,0.6), transparent);
+        }
+
+        /* ── Short viewport (< 700px tall) ── */
+        @media (max-height: 700px) {
+          .hero-name {
+            font-size: clamp(2rem, 4.5vw, 3.5rem);
+          }
+          .hero-tagline {
+            display: none;
+          }
+          .hero-scroll {
+            display: none;
+          }
+          .hero-buttons {
+            margin-bottom: min(1.5vh, 12px);
+          }
+          .hero-badge {
+            margin-bottom: 6px;
+          }
+        }
+
+        /* ── Mobile ── */
+        @media (max-width: 768px) {
+          .hero-grid {
+            grid-template-columns: 1fr;
+            gap: 0;
+          }
+          .hero-3d {
+            display: none;
+          }
+          .hero-name {
+            font-size: clamp(2.4rem, 10vw, 3.8rem);
+          }
+          .hero-scroll {
+            bottom: 16px;
+          }
+        }
+      `}</style>
     </section>
   );
 }

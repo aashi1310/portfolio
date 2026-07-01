@@ -31,11 +31,12 @@ export default function App() {
     });
     lenisRef.current = lenis;
 
+    let rafId;
     function raf(time) {
       lenis.raf(time);
-      requestAnimationFrame(raf);
+      rafId = requestAnimationFrame(raf);
     }
-    const rafId = requestAnimationFrame(raf);
+    rafId = requestAnimationFrame(raf);
 
     lenis.on('scroll', ({ progress }) => {
       setScrollProgress(progress * 100);
@@ -51,7 +52,7 @@ export default function App() {
     <>
       <div className="scan-line" />
       <Cursor />
-      <LoadingScreen onFinish={() => setLoaded(true)} />
+      {!loaded && <LoadingScreen onFinish={() => setLoaded(true)} />}
 
       <AnimatePresence>
         {loaded && (
