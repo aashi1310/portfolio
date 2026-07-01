@@ -1,367 +1,393 @@
-import { useRef, useState, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { ExternalLink, Code } from 'lucide-react';
-const Github = Code;
+import { useRef, useState } from 'react';
+import { motion, useScroll, useTransform } from 'framer-motion';
+import { ArrowUpRight, Code, ExternalLink } from 'lucide-react';
 
-type Filter = 'ALL' | 'AI' | 'FULL STACK' | 'WEB APPS';
-
-interface Project {
-  id: number;
-  title: string;
-  description: string;
-  tech: string[];
-  features: string[];
-  category: Filter[];
-  github: string;
-  demo: string;
-  gradient: string;
-  icon: string;
-}
-
-const projects: Project[] = [
+const projects = [
   {
     id: 1,
+    number: '01',
     title: 'EcoPackAI',
-    description: 'AI-powered plastic packaging impact analyzer that uses Gemini Vision API to assess environmental footprint and provide sustainable alternatives with actionable eco-recommendations.',
+    subtitle: 'Sustainable Packaging Intelligence',
+    description:
+      'AI-powered plastic packaging impact analyzer that uses Gemini Vision API to assess environmental footprint and provide actionable eco-recommendations. Scans product labels and generates sustainability scores.',
     tech: ['React', 'Node.js', 'MongoDB', 'Gemini Vision API'],
-    features: ['Sustainability Score', 'AI Analysis', 'Eco Recommendations'],
-    category: ['ALL', 'AI', 'FULL STACK'],
+    tags: ['Sustainability Score', 'AI Analysis', 'Eco Recommendations'],
     github: 'https://github.com/aashikajain',
     demo: '#',
-    gradient: 'linear-gradient(135deg, #22c55e20, #16a34a10)',
-    icon: '🌿',
+    color: '#22c55e',
+    accentDark: 'rgba(34,197,94,0.06)',
+    accentBorder: 'rgba(34,197,94,0.2)',
+    visual: { emoji: '🌿', bg: 'linear-gradient(135deg, rgba(34,197,94,0.08) 0%, rgba(16,185,129,0.04) 100%)' },
+    metrics: [
+      { value: '95%', label: 'Accuracy' },
+      { value: '< 2s', label: 'Analysis time' },
+    ],
   },
   {
     id: 2,
-    title: 'Student Management System',
-    description: 'Full-featured student management platform with authentication, CRUD operations, attendance tracking, and a comprehensive administrative dashboard.',
-    tech: ['HTML', 'CSS', 'JavaScript', 'Node.js', 'Express', 'MongoDB'],
-    features: ['Authentication', 'CRUD', 'Attendance', 'Dashboard'],
-    category: ['ALL', 'FULL STACK', 'WEB APPS'],
-    github: 'https://github.com/aashikajain/student-management-system',
+    number: '02',
+    title: 'FreshTrackAI',
+    subtitle: 'Smart Expiry Management',
+    description:
+      'Smart expiry tracking app powered by Gemini AI and OCR technology. Scan product labels, get expiry alerts, and receive personalized recipe recommendations to reduce food waste intelligently.',
+    tech: ['React', 'Node.js', 'MongoDB', 'Gemini API', 'OCR'],
+    tags: ['Expiry Tracking', 'OCR Scanning', 'Recipe Recommendation'],
+    github: 'https://github.com/aashikajain',
     demo: '#',
-    gradient: 'linear-gradient(135deg, #8B5CF620, #6D28D910)',
-    icon: '🎓',
+    color: '#f97316',
+    accentDark: 'rgba(249,115,22,0.06)',
+    accentBorder: 'rgba(249,115,22,0.2)',
+    visual: { emoji: '🥦', bg: 'linear-gradient(135deg, rgba(249,115,22,0.08) 0%, rgba(234,88,12,0.04) 100%)' },
+    metrics: [
+      { value: '40%', label: 'Waste reduced' },
+      { value: '200+', label: 'Items tracked' },
+    ],
   },
   {
     id: 3,
-    title: 'FreshTrackAI',
-    description: 'Smart expiry tracking app powered by Gemini AI and OCR technology. Scan product labels, get expiry alerts, and receive personalized recipe recommendations to reduce food waste.',
-    tech: ['React', 'Node.js', 'MongoDB', 'Gemini API', 'OCR'],
-    features: ['Expiry Tracking', 'OCR Scanning', 'Recipe Recommendation'],
-    category: ['ALL', 'AI', 'FULL STACK'],
-    github: 'https://github.com/aashikajain',
+    number: '03',
+    title: 'Student Management System',
+    subtitle: 'Complete Academic Platform',
+    description:
+      'Full-featured student management platform with authentication, CRUD operations, attendance tracking, and a comprehensive administrative dashboard for educational institutions.',
+    tech: ['HTML', 'CSS', 'JavaScript', 'Node.js', 'Express', 'MongoDB'],
+    tags: ['Authentication', 'CRUD', 'Attendance', 'Dashboard'],
+    github: 'https://github.com/aashikajain/student-management-system',
     demo: '#',
-    gradient: 'linear-gradient(135deg, #f97316 20, #ea580c10)',
-    icon: '🥦',
+    color: '#8b5cf6',
+    accentDark: 'rgba(139,92,246,0.06)',
+    accentBorder: 'rgba(139,92,246,0.2)',
+    visual: { emoji: '🎓', bg: 'linear-gradient(135deg, rgba(139,92,246,0.08) 0%, rgba(109,40,217,0.04) 100%)' },
+    metrics: [
+      { value: '100%', label: 'CRUD coverage' },
+      { value: 'Multi-role', label: 'Access control' },
+    ],
   },
 ];
 
-const filters: Filter[] = ['ALL', 'AI', 'FULL STACK', 'WEB APPS'];
+// Single project row — alternating layout
+function ProjectRow({ project, index }) {
+  const ref = useRef(null);
+  const { scrollYProgress } = useScroll({ target: ref, offset: ['start end', 'end start'] });
+  const y = useTransform(scrollYProgress, [0, 1], [30, -30]);
+  const [hovering, setHovering] = useState(false);
 
-function TiltCard({ children, style }: { children: React.ReactNode; style?: React.CSSProperties }) {
-  const ref = useRef<HTMLDivElement>(null);
-
-  const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
-    const card = ref.current;
-    if (!card) return;
-    const rect = card.getBoundingClientRect();
-    const x = (e.clientX - rect.left) / rect.width - 0.5;
-    const y = (e.clientY - rect.top) / rect.height - 0.5;
-    card.style.transform = `perspective(1000px) rotateX(${-y * 10}deg) rotateY(${x * 10}deg) translateY(-8px) scale(1.02)`;
-  }, []);
-
-  const handleMouseLeave = useCallback(() => {
-    const card = ref.current;
-    if (!card) return;
-    card.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg) translateY(0px) scale(1)';
-  }, []);
+  const isReversed = index % 2 !== 0;
 
   return (
-    <div
+    <motion.div
       ref={ref}
-      onMouseMove={handleMouseMove}
-      onMouseLeave={handleMouseLeave}
+      initial={{ opacity: 0, y: 60 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: '-80px' }}
+      transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
       style={{
-        transition: 'transform 0.3s ease',
-        transformStyle: 'preserve-3d',
-        ...style,
+        display: 'grid',
+        gridTemplateColumns: '1fr 1fr',
+        gap: 'clamp(2rem, 4vw, 5rem)',
+        marginBottom: 'clamp(64px, 10vw, 120px)',
+        position: 'relative',
+        direction: isReversed ? 'rtl' : 'ltr',
       }}
+      className="project-row"
     >
-      {children}
-    </div>
+      {/* Visual pane */}
+      <div
+        style={{ direction: 'ltr', position: 'relative' }}
+        onMouseEnter={() => setHovering(true)}
+        onMouseLeave={() => setHovering(false)}
+      >
+        <motion.div
+          style={{ y }}
+          animate={{
+            scale: hovering ? 1.02 : 1,
+          }}
+          transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+        >
+          <div
+            style={{
+              aspectRatio: '4/3',
+              borderRadius: '20px',
+              background: project.visual.bg,
+              border: `1px solid ${project.accentBorder}`,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              position: 'relative',
+              overflow: 'hidden',
+              transition: 'box-shadow 0.4s ease',
+              boxShadow: hovering
+                ? `0 20px 60px ${project.color}20, 0 0 0 1px ${project.color}30`
+                : '0 4px 24px rgba(0,0,0,0.2)',
+            }}
+          >
+            {/* Grid pattern */}
+            <div
+              style={{
+                position: 'absolute',
+                inset: 0,
+                backgroundImage: `
+                  linear-gradient(${project.accentBorder} 1px, transparent 1px),
+                  linear-gradient(90deg, ${project.accentBorder} 1px, transparent 1px)
+                `,
+                backgroundSize: '32px 32px',
+              }}
+            />
+
+            {/* Center visual */}
+            <div style={{ position: 'relative', textAlign: 'center', zIndex: 1 }}>
+              <div
+                style={{
+                  fontSize: 'clamp(4rem, 8vw, 6rem)',
+                  filter: hovering ? `drop-shadow(0 0 24px ${project.color}80)` : 'none',
+                  transition: 'filter 0.4s ease, transform 0.4s ease',
+                  transform: hovering ? 'scale(1.1)' : 'scale(1)',
+                  display: 'block',
+                }}
+              >
+                {project.visual.emoji}
+              </div>
+              <div
+                style={{
+                  fontFamily: 'JetBrains Mono, monospace',
+                  fontSize: '0.65rem',
+                  color: project.color,
+                  letterSpacing: '0.2em',
+                  marginTop: '12px',
+                  opacity: 0.7,
+                }}
+              >
+                PROJECT {project.number}
+              </div>
+            </div>
+
+            {/* Hover overlay with links */}
+            <motion.div
+              initial={false}
+              animate={{ opacity: hovering ? 1 : 0 }}
+              transition={{ duration: 0.25 }}
+              style={{
+                position: 'absolute',
+                inset: 0,
+                background: `rgba(4,3,10,0.75)`,
+                backdropFilter: 'blur(6px)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '16px',
+                borderRadius: '20px',
+              }}
+            >
+              <a
+                href={project.github}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn-secondary"
+                style={{ textDecoration: 'none', fontSize: '0.82rem' }}
+              >
+                <Code size={14} /> GitHub
+              </a>
+              <a
+                href={project.demo}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn-primary"
+                style={{ textDecoration: 'none', fontSize: '0.82rem' }}
+              >
+                <ExternalLink size={14} /> Live Demo
+              </a>
+            </motion.div>
+          </div>
+        </motion.div>
+      </div>
+
+      {/* Content pane */}
+      <div style={{ direction: 'ltr', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+        {/* Number */}
+        <div
+          style={{
+            fontFamily: 'JetBrains Mono, monospace',
+            fontSize: '0.65rem',
+            color: project.color,
+            letterSpacing: '0.2em',
+            marginBottom: '12px',
+            opacity: 0.7,
+          }}
+        >
+          {project.number} — {project.subtitle}
+        </div>
+
+        {/* Title */}
+        <h3
+          style={{
+            fontFamily: 'Outfit, sans-serif',
+            fontSize: 'clamp(1.6rem, 3.5vw, 2.4rem)',
+            fontWeight: 900,
+            letterSpacing: '-0.03em',
+            lineHeight: 1.05,
+            background: `linear-gradient(135deg, #ffffff 0%, ${project.color} 100%)`,
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            backgroundClip: 'text',
+            marginBottom: '16px',
+          }}
+        >
+          {project.title}
+        </h3>
+
+        {/* Description */}
+        <p style={{ color: '#64748b', lineHeight: 1.8, fontSize: '0.9rem', marginBottom: '20px' }}>
+          {project.description}
+        </p>
+
+        {/* Feature tags */}
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '20px' }}>
+          {project.tags.map(tag => (
+            <span
+              key={tag}
+              style={{
+                padding: '4px 12px',
+                borderRadius: '100px',
+                background: `${project.color}10`,
+                border: `1px solid ${project.color}25`,
+                color: project.color,
+                fontSize: '0.7rem',
+                fontWeight: 600,
+                fontFamily: 'JetBrains Mono, monospace',
+              }}
+            >
+              {tag}
+            </span>
+          ))}
+        </div>
+
+        {/* Tech stack */}
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '24px' }}>
+          {project.tech.map(t => (
+            <span
+              key={t}
+              style={{
+                padding: '3px 10px',
+                borderRadius: '6px',
+                background: 'rgba(255,255,255,0.04)',
+                border: '1px solid rgba(255,255,255,0.07)',
+                color: '#94a3b8',
+                fontSize: '0.7rem',
+                fontFamily: 'JetBrains Mono, monospace',
+              }}
+            >
+              {t}
+            </span>
+          ))}
+        </div>
+
+        {/* Metrics */}
+        <div style={{ display: 'flex', gap: '24px', marginBottom: '28px' }}>
+          {project.metrics.map(m => (
+            <div key={m.label}>
+              <div
+                style={{
+                  fontFamily: 'Outfit, sans-serif',
+                  fontSize: '1.4rem',
+                  fontWeight: 900,
+                  color: project.color,
+                  lineHeight: 1,
+                  marginBottom: '4px',
+                }}
+              >
+                {m.value}
+              </div>
+              <div style={{ fontSize: '0.65rem', color: '#4a5568', letterSpacing: '0.06em', textTransform: 'uppercase', fontFamily: 'JetBrains Mono, monospace' }}>
+                {m.label}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* CTA links */}
+        <div style={{ display: 'flex', gap: '12px' }}>
+          <a
+            href={project.github}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="btn-ghost"
+            style={{ textDecoration: 'none', fontSize: '0.82rem' }}
+          >
+            <Code size={14} /> Source Code
+          </a>
+          <a
+            href={project.demo}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="btn-primary"
+            style={{ textDecoration: 'none', fontSize: '0.82rem' }}
+          >
+            View Live <ArrowUpRight size={14} />
+          </a>
+        </div>
+      </div>
+    </motion.div>
   );
 }
 
 export default function Projects() {
-  const ref = useRef(null);
-  const [activeFilter, setActiveFilter] = useState<Filter>('ALL');
-
-  const filtered = projects.filter(p => p.category.includes(activeFilter));
-
   return (
     <section
       id="projects"
-      ref={ref}
       style={{
-        padding: 'clamp(80px, 10vw, 140px) 24px',
+        padding: 'var(--section-py) var(--section-px)',
         position: 'relative',
         overflow: 'hidden',
       }}
     >
-      <div style={{ maxWidth: '1200px', margin: '0 auto', position: 'relative' }}>
+      {/* Section accent */}
+      <div
+        style={{
+          position: 'absolute',
+          top: '10%',
+          right: '-15%',
+          width: '600px',
+          height: '600px',
+          background: 'radial-gradient(circle, rgba(124,58,237,0.05) 0%, transparent 60%)',
+          pointerEvents: 'none',
+        }}
+      />
+
+      <div style={{ maxWidth: 'var(--max-w)', margin: '0 auto', position: 'relative' }}>
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-          style={{ textAlign: 'center', marginBottom: '3rem' }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.7 }}
+          style={{ marginBottom: 'clamp(48px, 7vw, 80px)' }}
         >
-          <span style={{
-            fontSize: '0.75rem',
-            letterSpacing: '0.3em',
-            color: '#8B5CF6',
-            textTransform: 'uppercase',
-            display: 'block',
-            marginBottom: '12px',
-          }}>What I've Built</span>
-          <h2 className="section-title gradient-text">Featured Projects</h2>
-          <div className="neon-line" style={{ width: '80px', margin: '16px auto 0' }} />
-          <p style={{ color: '#94A3B8', marginTop: '1rem', fontSize: '0.95rem' }}>
-            Real-world solutions built with passion and precision
-          </p>
+          <div className="section-label">Featured Work</div>
+          <div style={{ display: 'flex', alignItems: 'flex-end', gap: '3rem', flexWrap: 'wrap' }}>
+            <h2 className="section-title gradient-text">Projects</h2>
+            <p style={{ color: '#4a5568', fontSize: '0.88rem', marginBottom: '10px', maxWidth: '300px', lineHeight: 1.6 }}>
+              Real-world solutions built with passion and precision
+            </p>
+          </div>
         </motion.div>
 
-        {/* Filters */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
-          transition={{ delay: 0.2, duration: 0.6 }}
-          style={{
-            display: 'flex',
-            justifyContent: 'center',
-            gap: '8px',
-            flexWrap: 'wrap',
-            marginBottom: '3rem',
-          }}
-        >
-          {filters.map((filter) => (
-            <motion.button
-              key={filter}
-              onClick={() => setActiveFilter(filter)}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              style={{
-                padding: '8px 20px',
-                borderRadius: '100px',
-                border: activeFilter === filter ? '1px solid rgba(139,92,246,0.6)' : '1px solid rgba(255,255,255,0.08)',
-                background: activeFilter === filter ? 'rgba(139,92,246,0.2)' : 'transparent',
-                color: activeFilter === filter ? '#A855F7' : '#94A3B8',
-                fontSize: '0.85rem',
-                fontWeight: 600,
-                cursor: 'none',
-                transition: 'all 0.3s ease',
-                letterSpacing: '0.05em',
-                boxShadow: activeFilter === filter ? '0 0 20px rgba(139,92,246,0.3)' : 'none',
-              }}
-            >
-              {filter}
-            </motion.button>
-          ))}
-        </motion.div>
+        {/* Divider */}
+        <div className="line-glow" style={{ marginBottom: 'clamp(48px, 7vw, 80px)' }} />
 
-        {/* Project Cards */}
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))',
-          gap: '24px',
-        }}>
-          <AnimatePresence mode="popLayout">
-            {filtered.map((project, i) => (
-              <motion.div
-                key={project.id}
-                layout
-                initial={{ opacity: 0, scale: 0.9, y: 30 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.9, y: -30 }}
-                transition={{ delay: i * 0.1, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-              >
-                <TiltCard>
-                  <div style={{
-                    background: 'rgba(17, 24, 39, 0.8)',
-                    backdropFilter: 'blur(20px)',
-                    border: '1px solid rgba(139, 92, 246, 0.15)',
-                    borderRadius: '24px',
-                    overflow: 'hidden',
-                    height: '100%',
-                    transition: 'border-color 0.3s ease, box-shadow 0.3s ease',
-                  }}
-                  onMouseEnter={e => {
-                    (e.currentTarget as HTMLDivElement).style.borderColor = 'rgba(139,92,246,0.5)';
-                    (e.currentTarget as HTMLDivElement).style.boxShadow = '0 0 40px rgba(139,92,246,0.2)';
-                  }}
-                  onMouseLeave={e => {
-                    (e.currentTarget as HTMLDivElement).style.borderColor = 'rgba(139,92,246,0.15)';
-                    (e.currentTarget as HTMLDivElement).style.boxShadow = 'none';
-                  }}
-                  >
-                    {/* Project Image Area */}
-                    <div style={{
-                      height: '200px',
-                      background: project.gradient,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      position: 'relative',
-                      overflow: 'hidden',
-                    }}>
-                      {/* Grid pattern */}
-                      <div style={{
-                        position: 'absolute',
-                        inset: 0,
-                        backgroundImage: 'linear-gradient(rgba(139,92,246,0.08) 1px, transparent 1px), linear-gradient(90deg, rgba(139,92,246,0.08) 1px, transparent 1px)',
-                        backgroundSize: '24px 24px',
-                      }} />
-                      <div style={{ position: 'relative', textAlign: 'center' }}>
-                        <div style={{ fontSize: '4rem', marginBottom: '8px' }}>{project.icon}</div>
-                        <div style={{
-                          fontSize: '0.7rem',
-                          letterSpacing: '0.2em',
-                          color: '#8B5CF6',
-                          textTransform: 'uppercase',
-                        }}>PROJECT</div>
-                      </div>
-                      {/* Glow overlay on hover */}
-                      <div style={{
-                        position: 'absolute',
-                        inset: 0,
-                        background: 'radial-gradient(circle at center, rgba(139,92,246,0.15) 0%, transparent 70%)',
-                      }} />
-                    </div>
-
-                    {/* Content */}
-                    <div style={{ padding: '24px' }}>
-                      <h3 style={{
-                        fontSize: '1.3rem',
-                        fontWeight: 800,
-                        background: 'linear-gradient(135deg, #ffffff, #A855F7)',
-                        WebkitBackgroundClip: 'text',
-                        WebkitTextFillColor: 'transparent',
-                        backgroundClip: 'text',
-                        marginBottom: '10px',
-                      }}>{project.title}</h3>
-
-                      <p style={{
-                        color: '#94A3B8',
-                        fontSize: '0.875rem',
-                        lineHeight: 1.7,
-                        marginBottom: '16px',
-                      }}>{project.description}</p>
-
-                      {/* Features */}
-                      <div style={{
-                        display: 'flex',
-                        flexWrap: 'wrap',
-                        gap: '6px',
-                        marginBottom: '16px',
-                      }}>
-                        {project.features.map(f => (
-                          <span key={f} style={{
-                            padding: '3px 10px',
-                            borderRadius: '100px',
-                            background: 'rgba(139,92,246,0.1)',
-                            color: '#A855F7',
-                            fontSize: '0.72rem',
-                            fontWeight: 600,
-                          }}>✦ {f}</span>
-                        ))}
-                      </div>
-
-                      {/* Tech Stack */}
-                      <div style={{
-                        display: 'flex',
-                        flexWrap: 'wrap',
-                        gap: '6px',
-                        marginBottom: '20px',
-                      }}>
-                        {project.tech.map(t => (
-                          <span key={t} style={{
-                            padding: '4px 10px',
-                            borderRadius: '8px',
-                            background: 'rgba(255,255,255,0.04)',
-                            border: '1px solid rgba(255,255,255,0.08)',
-                            color: '#94A3B8',
-                            fontSize: '0.72rem',
-                            fontFamily: 'monospace',
-                          }}>{t}</span>
-                        ))}
-                      </div>
-
-                      {/* Action buttons */}
-                      <div style={{ display: 'flex', gap: '10px' }}>
-                        <a
-                          href={project.github}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          style={{
-                            flex: 1,
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            gap: '6px',
-                            padding: '10px',
-                            borderRadius: '10px',
-                            background: 'rgba(255,255,255,0.04)',
-                            border: '1px solid rgba(255,255,255,0.08)',
-                            color: '#94A3B8',
-                            fontSize: '0.82rem',
-                            fontWeight: 500,
-                            textDecoration: 'none',
-                            transition: 'all 0.2s ease',
-                            cursor: 'none',
-                          }}
-                          onMouseEnter={e => {
-                            (e.currentTarget as HTMLAnchorElement).style.color = '#fff';
-                            (e.currentTarget as HTMLAnchorElement).style.borderColor = 'rgba(255,255,255,0.2)';
-                          }}
-                          onMouseLeave={e => {
-                            (e.currentTarget as HTMLAnchorElement).style.color = '#94A3B8';
-                            (e.currentTarget as HTMLAnchorElement).style.borderColor = 'rgba(255,255,255,0.08)';
-                          }}
-                        >
-                          <Github size={14} /> GitHub
-                        </a>
-                        <a
-                          href={project.demo}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="btn-glow"
-                          style={{
-                            flex: 1,
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            gap: '6px',
-                            padding: '10px',
-                            borderRadius: '10px',
-                            color: '#fff',
-                            fontSize: '0.82rem',
-                            fontWeight: 600,
-                            textDecoration: 'none',
-                            cursor: 'none',
-                          }}
-                        >
-                          <ExternalLink size={14} /> Live Demo
-                        </a>
-                      </div>
-                    </div>
-                  </div>
-                </TiltCard>
-              </motion.div>
-            ))}
-          </AnimatePresence>
-        </div>
+        {/* Projects */}
+        {projects.map((project, i) => (
+          <ProjectRow key={project.id} project={project} index={i} />
+        ))}
       </div>
+
+      <style>{`
+        @media (max-width: 768px) {
+          .project-row {
+            grid-template-columns: 1fr !important;
+            direction: ltr !important;
+          }
+        }
+      `}</style>
     </section>
   );
 }

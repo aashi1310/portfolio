@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import Lenis from 'lenis';
 import Cursor from './components/Cursor';
 import LoadingScreen from './components/LoadingScreen';
-import ParticleBackground from './components/ParticleBackground';
+import GlobalBackground from './components/GlobalBackground';
 import Navbar from './components/Navbar';
 import Hero from './components/Hero';
 import About from './components/About';
@@ -16,39 +17,53 @@ import { motion, AnimatePresence } from 'framer-motion';
 export default function App() {
   const [loaded, setLoaded] = useState(false);
   const [scrollProgress, setScrollProgress] = useState(0);
+  const lenisRef = useRef(null);
 
+  // Lenis smooth scroll
   useEffect(() => {
     if (!loaded) return;
-    const handleScroll = () => {
-      const scrollTop = window.scrollY;
-      const docHeight = document.documentElement.scrollHeight - window.innerHeight;
-      const progress = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
-      setScrollProgress(progress);
+
+    const lenis = new Lenis({
+      lerp: 0.08,
+      wheelMultiplier: 0.9,
+      touchMultiplier: 1.5,
+      infinite: false,
+    });
+    lenisRef.current = lenis;
+
+    function raf(time) {
+      lenis.raf(time);
+      requestAnimationFrame(raf);
+    }
+    const rafId = requestAnimationFrame(raf);
+
+    lenis.on('scroll', ({ progress }) => {
+      setScrollProgress(progress * 100);
+    });
+
+    return () => {
+      cancelAnimationFrame(rafId);
+      lenis.destroy();
     };
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
   }, [loaded]);
 
   return (
     <>
-      {/* Scan line effect */}
       <div className="scan-line" />
-
-      {/* Custom cursor */}
       <Cursor />
-
-      {/* Loading Screen */}
       <LoadingScreen onFinish={() => setLoaded(true)} />
 
-      {/* Main content */}
       <AnimatePresence>
         {loaded && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ duration: 0.6 }}
+            transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+            style={{ position: 'relative' }}
           >
-            <ParticleBackground />
+            {/* Continuous background spanning entire page */}
+            <GlobalBackground />
+
             <Navbar scrollProgress={scrollProgress} />
 
             <main style={{ position: 'relative', zIndex: 1 }}>

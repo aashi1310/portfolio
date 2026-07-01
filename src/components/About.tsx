@@ -1,51 +1,77 @@
 import { useRef, useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { GraduationCap, Code2, Brain, Sparkles } from 'lucide-react';
 
-function CountUp({ target, suffix = '' }: { target: number; suffix?: string }) {
+function Counter({ target, suffix = '', delay = 0 }) {
   const [count, setCount] = useState(0);
-  const [started, setStarted] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
+  const ref = useRef(null);
 
   useEffect(() => {
-    if (!started) return;
-    let current = 0;
-    const increment = target / 60;
-    const timer = setInterval(() => {
-      current += increment;
-      if (current >= target) {
-        setCount(target);
-        clearInterval(timer);
-      } else {
-        setCount(Math.floor(current));
-      }
-    }, 20);
-    return () => clearInterval(timer);
-  }, [started, target]);
+    const el = ref.current;
+    if (!el) return;
 
-  return (
-    <motion.div
-      ref={ref}
-      onViewportEnter={() => setStarted(true)}
-      style={{
-        fontSize: '2.5rem',
-        fontWeight: 900,
-        background: 'linear-gradient(135deg, #8B5CF6, #A855F7)',
-        WebkitBackgroundClip: 'text',
-        WebkitTextFillColor: 'transparent',
-        backgroundClip: 'text',
-      }}
-    >
-      {count}{suffix}
-    </motion.div>
-  );
+    const obs = new IntersectionObserver(([entry]) => {
+      if (!entry.isIntersecting) return;
+      obs.disconnect();
+
+      let start = 0;
+      const step = target / 55;
+      const timer = setInterval(() => {
+        start += step;
+        if (start >= target) {
+          setCount(target);
+          clearInterval(timer);
+        } else {
+          setCount(Math.floor(start));
+        }
+      }, 22);
+    }, { threshold: 0.5 });
+
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, [target]);
+
+  return <span ref={ref}>{count}{suffix}</span>;
 }
 
+const journey = [
+  {
+    year: '2023',
+    event: 'Started B.Tech in Computer Science at Bennett University',
+    type: 'education',
+  },
+  {
+    year: '2023',
+    event: 'First internship at Imarticus — data analytics & Python',
+    type: 'work',
+  },
+  {
+    year: '2024',
+    event: 'Joined Codexintern as Frontend Developer — React & APIs',
+    type: 'work',
+  },
+  {
+    year: '2024',
+    event: 'Software Development intern at Xebia — React, Node.js, Azure',
+    type: 'work',
+  },
+  {
+    year: '2024',
+    event: 'Top 15 finalist in national hackathon, Google competitions',
+    type: 'achievement',
+  },
+];
+
+const typeColor = {
+  education:   '#a78bfa',
+  work:        '#34d399',
+  achievement: '#fbbf24',
+};
+
 const stats = [
-  { target: 10, suffix: '+', label: 'Projects Built', icon: Code2 },
-  { target: 5, suffix: '+', label: 'Hackathons', icon: Sparkles },
-  { target: 3, suffix: '', label: 'Internships', icon: Brain },
-  { target: 15, suffix: '+', label: 'Technologies', icon: GraduationCap },
+  { value: 10, suffix: '+', label: 'Projects\nShipped' },
+  { value: 5,  suffix: '+', label: 'Hackathons\nEntered' },
+  { value: 3,  suffix: '',  label: 'Internships\nCompleted' },
+  { value: 15, suffix: '+', label: 'Technologies\nLearned' },
 ];
 
 export default function About() {
@@ -53,206 +79,320 @@ export default function About() {
     <section
       id="about"
       style={{
-        padding: 'clamp(80px, 10vw, 140px) 24px',
+        padding: 'var(--section-py) var(--section-px)',
         position: 'relative',
-        maxWidth: '1200px',
+        maxWidth: 'var(--max-w)',
         margin: '0 auto',
       }}
     >
-      {/* Section label */}
+      {/* Section header — asymmetric, not centered */}
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        whileInView={{ opacity: 1, y: 0 }}
+        initial={{ opacity: 0, x: -30 }}
+        whileInView={{ opacity: 1, x: 0 }}
         viewport={{ once: true, margin: '-80px' }}
-        transition={{ duration: 0.6 }}
-        style={{ textAlign: 'center', marginBottom: '4rem' }}
+        transition={{ duration: 0.7 }}
+        style={{ marginBottom: 'clamp(40px, 6vw, 72px)' }}
       >
-        <span style={{
-          fontSize: '0.75rem',
-          letterSpacing: '0.3em',
-          color: '#8B5CF6',
-          textTransform: 'uppercase',
-          display: 'block',
-          marginBottom: '12px',
-        }}>Get To Know Me</span>
-        <h2 className="section-title gradient-text">About Me</h2>
-        <div className="neon-line" style={{ width: '80px', margin: '16px auto 0' }} />
+        <div className="section-label">About me</div>
+        <h2
+          className="section-title gradient-text"
+          style={{ maxWidth: '480px' }}
+        >
+          The person
+          <br />
+          behind the code
+        </h2>
       </motion.div>
 
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1.2fr)',
-        gap: 'clamp(2rem, 5vw, 5rem)',
-        alignItems: 'start',
-      }}>
-        {/* Left - Profile Visual */}
+      {/* Main asymmetric grid */}
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: '0.85fr 1.15fr',
+          gap: 'clamp(2.5rem, 6vw, 7rem)',
+          alignItems: 'start',
+        }}
+      >
+        {/* ── LEFT — monogram + journey timeline ── */}
         <motion.div
-          initial={{ opacity: 0, x: -50 }}
-          whileInView={{ opacity: 1, x: 0 }}
-          viewport={{ once: true, margin: '-80px' }}
+          initial={{ opacity: 0, y: 40 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: '-60px' }}
           transition={{ duration: 0.8 }}
-          style={{ display: 'flex', justifyContent: 'center' }}
         >
-          <div style={{ position: 'relative', width: '280px', height: '280px' }}>
-            {/* Outer rotating ring */}
-            <div className="animate-spin-slow" style={{
-              position: 'absolute',
-              inset: '-20px',
-              borderRadius: '50%',
-              border: '1px solid rgba(139,92,246,0.3)',
-              borderTopColor: '#8B5CF6',
-              borderRightColor: 'transparent',
-            }} />
-            {/* Second ring */}
-            <div className="animate-spin-reverse" style={{
-              position: 'absolute',
-              inset: '-36px',
-              borderRadius: '50%',
-              border: '1px dashed rgba(139,92,246,0.15)',
-            }} />
-            {/* Glow aura */}
-            <div className="animate-glow-pulse" style={{
-              position: 'absolute',
-              inset: '-10px',
-              borderRadius: '50%',
-              background: 'radial-gradient(circle, rgba(139,92,246,0.2) 0%, transparent 70%)',
-            }} />
-            {/* Profile circle */}
-            <div style={{
-              width: '100%',
-              height: '100%',
-              borderRadius: '50%',
-              background: 'linear-gradient(135deg, rgba(139,92,246,0.15) 0%, rgba(17,24,39,0.9) 100%)',
-              border: '2px solid rgba(139,92,246,0.4)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              overflow: 'hidden',
-              boxShadow: '0 0 40px rgba(139,92,246,0.3), 0 0 80px rgba(139,92,246,0.1)',
+          {/* Editorial monogram */}
+          <div
+            style={{
               position: 'relative',
-            }}>
-              <div style={{ textAlign: 'center' }}>
-                <div style={{
-                  fontSize: '5rem',
-                  background: 'linear-gradient(135deg, #8B5CF6, #A855F7)',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
-                  backgroundClip: 'text',
-                  fontWeight: 900,
-                  lineHeight: 1,
+              marginBottom: '3rem',
+              height: '280px',
+            }}
+          >
+            {/* Large background initials */}
+            <div
+              style={{
+                position: 'absolute',
+                top: '-20px',
+                left: '-10px',
+                fontFamily: 'Outfit, sans-serif',
+                fontSize: 'clamp(7rem, 14vw, 12rem)',
+                fontWeight: 900,
+                lineHeight: 1,
+                letterSpacing: '-0.06em',
+                color: 'transparent',
+                WebkitTextStroke: '1px rgba(124,58,237,0.12)',
+                userSelect: 'none',
+                pointerEvents: 'none',
+              }}
+            >
+              AJ
+            </div>
+
+            {/* Foreground card */}
+            <div
+              className="glass-violet"
+              style={{
+                position: 'absolute',
+                bottom: 0,
+                left: '16px',
+                right: '0',
+                borderRadius: '20px',
+                padding: '24px',
+              }}
+            >
+              <div
+                style={{
+                  fontSize: '0.68rem',
+                  color: '#4a5568',
+                  letterSpacing: '0.15em',
+                  textTransform: 'uppercase',
+                  fontFamily: 'JetBrains Mono, monospace',
                   marginBottom: '8px',
-                }}>AJ</div>
-                <div style={{ fontSize: '0.7rem', color: '#94A3B8', letterSpacing: '0.1em' }}>FULL STACK DEV</div>
+                }}
+              >
+                CURRENTLY
+              </div>
+              <div style={{ fontWeight: 700, color: '#f1f0f6', fontSize: '0.95rem', marginBottom: '4px' }}>
+                B.Tech Computer Science
+              </div>
+              <div style={{ color: '#7c3aed', fontSize: '0.82rem' }}>
+                Bennett University · 2023 — 2027
+              </div>
+              <div style={{ marginTop: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <div className="availability-dot" />
+                <span style={{ color: '#34d399', fontSize: '0.72rem', fontWeight: 600, letterSpacing: '0.05em' }}>
+                  Open to opportunities
+                </span>
               </div>
             </div>
 
-            {/* Floating dots */}
-            {[45, 135, 225, 315].map((deg, i) => (
+            {/* Orbital accent */}
+            <div
+              className="animate-spin-slow"
+              style={{
+                position: 'absolute',
+                top: '10px',
+                right: '-10px',
+                width: '80px',
+                height: '80px',
+                border: '1px solid rgba(124,58,237,0.2)',
+                borderTopColor: 'rgba(124,58,237,0.6)',
+                borderRadius: '50%',
+              }}
+            />
+            <div
+              className="animate-spin-reverse"
+              style={{
+                position: 'absolute',
+                top: '0px',
+                right: '-20px',
+                width: '100px',
+                height: '100px',
+                border: '1px dashed rgba(124,58,237,0.1)',
+                borderRadius: '50%',
+              }}
+            />
+          </div>
+
+          {/* Journey micro-timeline */}
+          <div>
+            <div
+              style={{
+                fontSize: '0.68rem',
+                color: '#4a5568',
+                letterSpacing: '0.2em',
+                textTransform: 'uppercase',
+                fontFamily: 'JetBrains Mono, monospace',
+                marginBottom: '16px',
+              }}
+            >
+              Journey
+            </div>
+
+            <div style={{ position: 'relative', paddingLeft: '20px' }}>
+              {/* Vertical line */}
               <div
-                key={i}
                 style={{
                   position: 'absolute',
-                  width: '10px',
-                  height: '10px',
-                  borderRadius: '50%',
-                  background: 'linear-gradient(135deg, #8B5CF6, #A855F7)',
-                  boxShadow: '0 0 15px rgba(139,92,246,0.8)',
-                  top: `${50 - 55 * Math.sin((deg * Math.PI) / 180)}%`,
-                  left: `${50 + 55 * Math.cos((deg * Math.PI) / 180)}%`,
-                  transform: 'translate(-50%, -50%)',
-                  animation: `float ${4 + i}s ease-in-out infinite ${i * 0.5}s`,
+                  left: '5px',
+                  top: '6px',
+                  bottom: '6px',
+                  width: '1px',
+                  background: 'linear-gradient(180deg, rgba(124,58,237,0.5), rgba(124,58,237,0.08))',
                 }}
               />
-            ))}
+
+              {journey.map((item, i) => (
+                <motion.div
+                  key={i}
+                  initial={{ opacity: 0, x: -16 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: i * 0.08, duration: 0.5 }}
+                  style={{
+                    position: 'relative',
+                    marginBottom: '16px',
+                    paddingLeft: '16px',
+                  }}
+                >
+                  {/* Dot */}
+                  <div
+                    style={{
+                      position: 'absolute',
+                      left: '-16px',
+                      top: '5px',
+                      width: '7px',
+                      height: '7px',
+                      borderRadius: '50%',
+                      background: typeColor[item.type],
+                      boxShadow: `0 0 8px ${typeColor[item.type]}80`,
+                    }}
+                  />
+                  <div
+                    style={{
+                      fontSize: '0.65rem',
+                      color: typeColor[item.type],
+                      fontFamily: 'JetBrains Mono, monospace',
+                      marginBottom: '2px',
+                      letterSpacing: '0.06em',
+                    }}
+                  >
+                    {item.year}
+                  </div>
+                  <div style={{ fontSize: '0.8rem', color: '#64748b', lineHeight: 1.5 }}>
+                    {item.event}
+                  </div>
+                </motion.div>
+              ))}
+            </div>
           </div>
         </motion.div>
 
-        {/* Right - Content */}
+        {/* ── RIGHT — story + stats ─────────────── */}
         <motion.div
-          initial={{ opacity: 0, x: 50 }}
-          whileInView={{ opacity: 1, x: 0 }}
-          viewport={{ once: true, margin: '-80px' }}
-          transition={{ duration: 0.8, delay: 0.2 }}
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: '-60px' }}
+          transition={{ duration: 0.8, delay: 0.15 }}
         >
-          <h3 style={{
-            fontSize: 'clamp(1.4rem, 2.5vw, 1.8rem)',
-            fontWeight: 700,
-            marginBottom: '1.2rem',
-            background: 'linear-gradient(135deg, #ffffff, #94A3B8)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            backgroundClip: 'text',
-          }}>
-            Passionate Developer &amp; Problem Solver
-          </h3>
-
-          <p style={{
-            color: '#94A3B8',
-            lineHeight: 1.85,
-            fontSize: '0.98rem',
-            marginBottom: '1.2rem',
-          }}>
-            I'm a passionate <span style={{ color: '#A855F7', fontWeight: 600 }}>Full Stack Developer</span> and Computer Science student who loves building modern web applications and AI-powered solutions. I enjoy solving real-world problems through technology and creating experiences that are both functional and visually stunning.
-          </p>
-          <p style={{
-            color: '#94A3B8',
-            lineHeight: 1.85,
-            fontSize: '0.98rem',
-            marginBottom: '2rem',
-          }}>
-            Currently pursuing my <span style={{ color: '#A855F7', fontWeight: 600 }}>B.Tech in Computer Science</span> at Bennett University (2023–2027), I'm constantly learning and pushing boundaries — from building AI-powered tools to competing in national hackathons.
+          {/* Editorial pull-quote style intro */}
+          <p
+            style={{
+              fontFamily: 'Outfit, sans-serif',
+              fontSize: 'clamp(1.2rem, 2.2vw, 1.55rem)',
+              fontWeight: 700,
+              lineHeight: 1.4,
+              color: '#f1f0f6',
+              marginBottom: '1.5rem',
+              letterSpacing: '-0.02em',
+            }}
+          >
+            I build things that live at the intersection of{' '}
+            <span
+              style={{
+                background: 'linear-gradient(135deg, #a78bfa, #7c3aed)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                backgroundClip: 'text',
+              }}
+            >
+              engineering precision
+            </span>{' '}
+            and creative ambition.
           </p>
 
-          {/* Education card */}
-          <div className="glass-strong" style={{
-            borderRadius: '16px',
-            padding: '20px',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '16px',
-            marginBottom: '2.5rem',
-          }}>
-            <div style={{
-              width: '48px',
-              height: '48px',
-              borderRadius: '12px',
-              background: 'rgba(139,92,246,0.2)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              flexShrink: 0,
-            }}>
-              <GraduationCap size={24} color="#A855F7" />
-            </div>
-            <div>
-              <div style={{ fontWeight: 700, color: '#fff', fontSize: '0.95rem' }}>B.Tech in Computer Science</div>
-              <div style={{ color: '#8B5CF6', fontSize: '0.85rem', marginTop: '2px' }}>Bennett University • 2023 – 2027</div>
-            </div>
-          </div>
+          <p style={{ color: '#64748b', lineHeight: 1.8, fontSize: '0.92rem', marginBottom: '1.2rem' }}>
+            I'm a passionate Full Stack Developer and CS student who loves building modern web applications
+            and AI-powered solutions. I enjoy solving real-world problems through technology and creating
+            experiences that are both functional and visually stunning.
+          </p>
 
-          {/* Stats */}
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(2, 1fr)',
-            gap: '16px',
-          }}>
-            {stats.map((stat, i) => (
+          <p style={{ color: '#64748b', lineHeight: 1.8, fontSize: '0.92rem', marginBottom: '2.5rem' }}>
+            Currently pursuing my <span style={{ color: '#a78bfa' }}>B.Tech in Computer Science</span> at
+            Bennett University (2023–2027), constantly learning and pushing boundaries —
+            from building AI-powered tools to competing in national hackathons.
+          </p>
+
+          {/* Stats — different visual weights */}
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(2, 1fr)',
+              gap: '12px',
+            }}
+          >
+            {stats.map((s, i) => (
               <motion.div
-                key={stat.label}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: '-40px' }}
-                transition={{ delay: i * 0.1, duration: 0.6 }}
-                className="glass glow-border-hover"
+                key={s.label}
+                initial={{ opacity: 0, scale: 0.9 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.3 + i * 0.08, duration: 0.5 }}
                 style={{
+                  padding: i === 0 ? '28px' : '20px 24px',
+                  background: i === 0
+                    ? 'rgba(124,58,237,0.07)'
+                    : 'rgba(255,255,255,0.02)',
+                  border: `1px solid ${i === 0 ? 'rgba(124,58,237,0.25)' : 'rgba(255,255,255,0.05)'}`,
                   borderRadius: '16px',
-                  padding: '20px',
-                  textAlign: 'center',
+                  gridColumn: i === 0 ? 'span 2' : 'span 1',
+                  display: 'flex',
+                  alignItems: i === 0 ? 'flex-end' : 'center',
+                  gap: i === 0 ? '0' : '16px',
+                  flexDirection: i === 0 ? 'row' : 'column',
+                  justifyContent: i === 0 ? 'space-between' : 'center',
+                  textAlign: i === 0 ? 'left' : 'center',
                 }}
               >
-                <stat.icon size={20} color="#8B5CF6" style={{ margin: '0 auto 8px' }} />
-                <CountUp target={stat.target} suffix={stat.suffix} />
-                <div style={{ color: '#94A3B8', fontSize: '0.78rem', marginTop: '4px' }}>{stat.label}</div>
+                <div>
+                  <div
+                    style={{
+                      fontFamily: 'Outfit, sans-serif',
+                      fontSize: i === 0 ? 'clamp(2.2rem, 4vw, 3rem)' : '2rem',
+                      fontWeight: 900,
+                      lineHeight: 1,
+                      background: 'linear-gradient(135deg, #a78bfa, #7c3aed)',
+                      WebkitBackgroundClip: 'text',
+                      WebkitTextFillColor: 'transparent',
+                      backgroundClip: 'text',
+                    }}
+                  >
+                    <Counter target={s.value} suffix={s.suffix} delay={i * 100} />
+                  </div>
+                </div>
+                <div
+                  style={{
+                    fontSize: '0.7rem',
+                    color: '#4a5568',
+                    letterSpacing: '0.08em',
+                    textTransform: 'uppercase',
+                    fontFamily: 'JetBrains Mono, monospace',
+                    whiteSpace: 'pre-line',
+                    lineHeight: 1.4,
+                  }}
+                >
+                  {s.label}
+                </div>
               </motion.div>
             ))}
           </div>

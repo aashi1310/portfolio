@@ -1,150 +1,111 @@
-import { useEffect, useRef, useState } from 'react';
-
-interface Particle {
-  x: number;
-  y: number;
-  vx: number;
-  vy: number;
-  life: number;
-  maxLife: number;
-  size: number;
-}
+import { useEffect, useRef } from 'react';
 
 export default function Cursor() {
-  const cursorRef = useRef<HTMLDivElement>(null);
-  const dotRef = useRef<HTMLDivElement>(null);
-  const [isHovering, setIsHovering] = useState(false);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const pos = useRef({ x: 0, y: 0 });
-  const target = useRef({ x: 0, y: 0 });
-  const animFrameRef = useRef<number>(0);
+  const dotRef  = useRef(null);
+  const ringRef = useRef(null);
 
   useEffect(() => {
-    const canvas = canvasRef.current!;
-    const ctx = canvas.getContext('2d')!;
-    let particleList: Particle[] = [];
+    let mouseX = -100, mouseY = -100;
+    let ringX  = -100, ringY  = -100;
+    let rafId;
+    let hovering = false;
+    let clicking = false;
 
-    const resize = () => {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-    };
-    resize();
-    window.addEventListener('resize', resize);
-
-    const onMouseMove = (e: MouseEvent) => {
-      target.current = { x: e.clientX, y: e.clientY };
-      const el = document.elementFromPoint(e.clientX, e.clientY);
-      const hoverable = el?.closest('button, a, [data-cursor-hover]');
-      setIsHovering(!!hoverable);
+    const onMove = (e) => {
+      mouseX = e.clientX;
+      mouseY = e.clientY;
     };
 
-    const onClick = (e: MouseEvent) => {
-      for (let i = 0; i < 12; i++) {
-        particleList.push({
-          x: e.clientX,
-          y: e.clientY,
-          vx: (Math.random() - 0.5) * 6,
-          vy: (Math.random() - 0.5) * 6,
-          life: 1,
-          maxLife: 1,
-          size: Math.random() * 4 + 2,
-        });
-      }
+    const onEnter = () => { hovering = true; };
+    const onLeave = () => { hovering = false; };
+
+    const onDown = () => { clicking = true; };
+    const onUp   = () => { clicking = false; };
+
+    window.addEventListener('mousemove', onMove);
+    window.addEventListener('mousedown', onDown);
+    window.addEventListener('mouseup',   onUp);
+
+    // Attach to all interactive elements
+    const attach = () => {
+      document.querySelectorAll('a, button, [role="button"], input, textarea').forEach(el => {
+        el.addEventListener('mouseenter', onEnter);
+        el.addEventListener('mouseleave', onLeave);
+      });
     };
+    attach();
+    const observer = new MutationObserver(attach);
+    observer.observe(document.body, { childList: true, subtree: true });
 
-    window.addEventListener('mousemove', onMouseMove);
-    window.addEventListener('click', onClick);
+    function tick() {
+      if (!dotRef.current || !ringRef.current) return;
 
-    const animate = () => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      // Dot: instant
+      dotRef.current.style.left  = `${mouseX}px`;
+      dotRef.current.style.top   = `${mouseY}px`;
 
-      // Lerp cursor
-      pos.current.x += (target.current.x - pos.current.x) * 0.12;
-      pos.current.y += (target.current.y - pos.current.y) * 0.12;
+      // Ring: lagged lerp
+      ringX += (mouseX - ringX) * 0.12;
+      ringY += (mouseY - ringY) * 0.12;
+      ringRef.current.style.left = `${ringX}px`;
+      ringRef.current.style.top  = `${ringY}px`;
 
-      // Update cursor DOM element
-      if (cursorRef.current) {
-        cursorRef.current.style.left = `${pos.current.x}px`;
-        cursorRef.current.style.top = `${pos.current.y}px`;
-      }
-      if (dotRef.current) {
-        dotRef.current.style.left = `${target.current.x}px`;
-        dotRef.current.style.top = `${target.current.y}px`;
-      }
+      // Scale states
+      const dotScale  = clicking ? 0.5 : hovering ? 0 : 1;
+      const ringScale = clicking ? 0.8 : hovering ? 1.8 : 1;
 
-      // Draw particles
-      particleList = particleList.filter(p => p.life > 0);
-      for (const p of particleList) {
-        p.x += p.vx;
-        p.y += p.vy;
-        p.vx *= 0.95;
-        p.vy *= 0.95;
-        p.life -= 0.03;
+      dotRef.current.style.transform  = `translate(-50%, -50%) scale(${dotScale})`;
+      ringRef.current.style.transform = `translate(-50%, -50%) scale(${ringScale})`;
 
-        const alpha = Math.max(0, p.life);
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, p.size * alpha, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(168, 85, 247, ${alpha})`;
-        ctx.fill();
+      if (hovering) {
+        ringRef.current.style.borderColor = 'rgba(167, 139, 250, 0.7)';
+        ringRef.current.style.background  = 'rgba(124, 58, 237, 0.06)';
+      } else {
+        ringRef.current.style.borderColor = 'rgba(167, 139, 250, 0.4)';
+        ringRef.current.style.background  = 'transparent';
       }
 
-      animFrameRef.current = requestAnimationFrame(animate);
-    };
-
-    animate();
+      rafId = requestAnimationFrame(tick);
+    }
+    rafId = requestAnimationFrame(tick);
 
     return () => {
-      window.removeEventListener('mousemove', onMouseMove);
-      window.removeEventListener('click', onClick);
-      window.removeEventListener('resize', resize);
-      cancelAnimationFrame(animFrameRef.current);
+      window.removeEventListener('mousemove', onMove);
+      window.removeEventListener('mousedown', onDown);
+      window.removeEventListener('mouseup',   onUp);
+      observer.disconnect();
+      cancelAnimationFrame(rafId);
     };
   }, []);
 
   return (
     <>
-      <canvas
-        ref={canvasRef}
-        style={{
-          position: 'fixed',
-          inset: 0,
-          pointerEvents: 'none',
-          zIndex: 99999,
-        }}
-      />
-      {/* Outer ring */}
-      <div
-        ref={cursorRef}
-        style={{
-          position: 'fixed',
-          width: isHovering ? '50px' : '30px',
-          height: isHovering ? '50px' : '30px',
-          borderRadius: '50%',
-          border: `1.5px solid rgba(139, 92, 246, ${isHovering ? 0.9 : 0.6})`,
-          boxShadow: isHovering
-            ? '0 0 20px rgba(139,92,246,0.8), 0 0 40px rgba(139,92,246,0.4)'
-            : '0 0 10px rgba(139,92,246,0.4)',
-          transform: 'translate(-50%, -50%)',
-          pointerEvents: 'none',
-          zIndex: 99998,
-          transition: 'width 0.2s ease, height 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease',
-          backdropFilter: isHovering ? 'blur(4px)' : 'none',
-          background: isHovering ? 'rgba(139, 92, 246, 0.08)' : 'transparent',
-        }}
-      />
-      {/* Inner dot */}
       <div
         ref={dotRef}
         style={{
           position: 'fixed',
-          width: '6px',
-          height: '6px',
+          width: '8px',
+          height: '8px',
           borderRadius: '50%',
-          background: 'linear-gradient(135deg, #8B5CF6, #A855F7)',
-          boxShadow: '0 0 10px rgba(139,92,246,1)',
-          transform: 'translate(-50%, -50%)',
+          background: '#a78bfa',
           pointerEvents: 'none',
           zIndex: 99999,
+          transition: 'transform 0.1s ease',
+          willChange: 'transform, left, top',
+        }}
+      />
+      <div
+        ref={ringRef}
+        style={{
+          position: 'fixed',
+          width: '38px',
+          height: '38px',
+          borderRadius: '50%',
+          border: '1px solid rgba(167, 139, 250, 0.4)',
+          pointerEvents: 'none',
+          zIndex: 99998,
+          transition: 'transform 0.2s ease, border-color 0.2s ease, background 0.2s ease',
+          willChange: 'transform, left, top',
         }}
       />
     </>
