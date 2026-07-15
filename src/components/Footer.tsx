@@ -14,18 +14,18 @@ const LinkedinIcon = ({ size = 16, color = 'currentColor' }) => (
 );
 
 const navLinks = [
-  { label: 'About',        id: 'about' },
-  { label: 'Skills',       id: 'skills' },
-  { label: 'Experience',   id: 'experience' },
-  { label: 'Projects',     id: 'projects' },
+  { label: 'About', id: 'about' },
+  { label: 'Skills', id: 'skills' },
+  { label: 'Experience', id: 'experience' },
+  { label: 'Projects', id: 'projects' },
   { label: 'Achievements', id: 'achievements' },
-  { label: 'Contact',      id: 'contact' },
+  { label: 'Contact', id: 'contact' },
 ];
 
 const socials = [
-  { icon: GithubIcon,   href: 'https://github.com/aashikajain',         label: 'GitHub' },
-  { icon: LinkedinIcon, href: 'https://linkedin.com/in/aashikajain',    label: 'LinkedIn' },
-  { icon: Mail,         href: 'mailto:aashikajain@email.com',           label: 'Email' },
+  { icon: GithubIcon, href: 'https://github.com/aashi1310', label: 'GitHub' },
+  { icon: LinkedinIcon, href: 'https://www.linkedin.com/in/aashikajain5/', label: 'LinkedIn' },
+  { icon: Mail, href: 'mailto:aashikajain1310@gmail.com', label: 'Email' },
 ];
 
 export default function Footer() {
@@ -164,7 +164,7 @@ export default function Footer() {
           </span>
 
           <span style={{ color: '#1a2030', fontSize: '0.72rem', fontFamily: 'JetBrains Mono, monospace' }}>
-            Designed & built with ♥ in India
+
           </span>
         </div>
       </div>

@@ -18,31 +18,31 @@ const LinkedinIcon = ({ size = 18, color = 'currentColor' }) => (
 const socials = [
   {
     label: 'GitHub',
-    href: 'https://github.com/aashikajain',
+    href: 'https://github.com/aashi1310',
     color: '#f1f0f6',
-    description: 'aashikajain',
+    description: 'aashi1310',
     icon: GithubIcon,
   },
   {
     label: 'LinkedIn',
-    href: 'https://linkedin.com/in/aashikajain',
+    href: 'https://www.linkedin.com/in/aashikajain5/',
     color: '#0A66C2',
-    description: 'aashikajain',
+    description: 'Aashika Jain',
     icon: LinkedinIcon,
   },
   {
     label: 'Email',
-    href: 'mailto:aashikajain@email.com',
+    href: 'mailto:aashikajain1310@gmail.com',
     color: '#a78bfa',
-    description: 'aashikajain@email.com',
+    description: 'aashikajain1310@gmail.com',
     icon: Mail,
   },
 ];
 
 export default function Contact() {
-  const [form, setForm]     = useState({ name: '', email: '', message: '' });
-  const [sending, setSend]  = useState(false);
-  const [sent, setSent]     = useState(false);
+  const [form, setForm] = useState({ name: '', email: '', message: '' });
+  const [sending, setSend] = useState(false);
+  const [sent, setSent] = useState(false);
 
   const handleSubmit = (e) => {
     e.preventDefault();
