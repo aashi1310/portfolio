@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowRight, Download, Mail } from 'lucide-react';
 import ThreeSphere from './ThreeSphere';
+import resumePdf from '../assets/Aashika_Jain_Resume.pdf';
 
 const roles = [
   'Full Stack Developer',
@@ -142,7 +143,7 @@ export default function Hero() {
             <button onClick={() => scrollTo('projects')} className="btn-primary">
               View Projects <ArrowRight size={15} />
             </button>
-            <a href="/resume.pdf" download className="btn-secondary" style={{ textDecoration: 'none' }}>
+            <a href={resumePdf} download className="btn-secondary" style={{ textDecoration: 'none' }}>
               <Download size={14} /> Resume
             </a>
             <button onClick={() => scrollTo('contact')} className="btn-ghost">
