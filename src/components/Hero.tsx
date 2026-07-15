@@ -143,7 +143,7 @@ export default function Hero() {
             <button onClick={() => scrollTo('projects')} className="btn-primary">
               View Projects <ArrowRight size={15} />
             </button>
-            <a href={resumePdf} download className="btn-secondary" style={{ textDecoration: 'none' }}>
+            <a href={resumePdf} download="Aashika_Jain_Resume.pdf" className="btn-secondary" style={{ textDecoration: 'none' }}>
               <Download size={14} /> Resume
             </a>
             <button onClick={() => scrollTo('contact')} className="btn-ghost">
